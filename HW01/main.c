@@ -13,9 +13,9 @@ static const char *code_iso_8859_5 = "iso-8859-5";
 /**
  * Получаем таблицу символов кодировки переданного файла
  * @param name_file - файл с набором символов выбранной кодировки
- * @param simbols - результирующая таблица символов
+ * @param symbols - результирующая таблица символов
  */
-void character_table(const char *name_file, char simbols[66][7]) {
+void character_table(const char *name_file, char symbols[66][3]) {
     FILE *fp;
     if ((fp = fopen(name_file, "r")) == NULL) {
         printf("Не удалось открыть файл %s\n", name_file);
@@ -25,7 +25,7 @@ void character_table(const char *name_file, char simbols[66][7]) {
     // Набор байт представляет кодировку символа
     static char cc[8];
     int iter = 0;
-    while ((fgets(cc, 8, fp)) != nullptr) {
+    while ((fgets(cc, 8, fp)) != NULL) {
         // Узнаем сколько байт используется для указания символа
         int it = 0;
         for (int i = 0;; ++i) {
@@ -37,9 +37,9 @@ void character_table(const char *name_file, char simbols[66][7]) {
 
         // инициализируем результирующий массив
         for (int i = 0; i < it; ++i) {
-            simbols[iter][i] = cc[i];
+            symbols[iter][i] = cc[i];
         }
-        simbols[iter][it] = '\0'; // Паследним символом задаем нуль-символ, чтобы обозначить конец строки
+        symbols[iter][it] = '\0'; // Паследним символом задаем нуль-символ, чтобы обозначить конец строки
         iter++;
     }
     fclose(fp);
@@ -73,14 +73,13 @@ int compare_strings(const char *str0, const char *str1) {
 
 /**
  * Получаем индекс символа в таблице символов.
- * @param simbol - символ для которого получаем индекс.
+ * @param symbol - символ для которого получаем индекс.
  * @param from - таблица символов в которой ищем символ.
  * @return index|-1 - индекс символа в таблице или -1 если символ в таблице не найден.
  */
-int index_simbol(char simbol, char from[66][7]) {
-    char str[2] = {simbol, '\0'};
+int index_symbol(char symbol, char from[][3]) {
     for (int i = 0; i < 66; ++i) {
-        if (compare_strings(str, from[i])) {
+        if (symbol == from[i][0]) {
             return i;
         }
     }
@@ -121,17 +120,17 @@ int main(int argc, char *argv[]) {
     }
 
     /**  создаем таблицы символов */
-    static char simbols_from[66][7]; // таблица символов кодировки исходного файла (индекс символа соответствует индексу символа в таблице кодировки simbols_utf8)
-    static char simbols_utf8[66][7]; // таблица символов кодировки utf8 (индекс символа соответствует индексу символа в таблице кодировки simbols_from)
-    character_table(utf8, simbols_utf8);
+    static char symbols_from[66][3]; // таблица символов кодировки исходного файла (индекс символа соответствует индексу символа в таблице кодировки symbols_utf8)
+    static char symbols_utf8[66][3]; // таблица символов кодировки utf8 (индекс символа соответствует индексу символа в таблице кодировки symbols_from)
+    character_table(utf8, symbols_utf8);
     if (compare_strings(argv[2], code_cp1251)) {
-        character_table(cp125, simbols_from);
+        character_table(cp125, symbols_from);
     }
     if (compare_strings(argv[2], code_koi8)) {
-        character_table(koi8, simbols_from);
+        character_table(koi8, symbols_from);
     }
     if (compare_strings(argv[2], code_iso_8859_5)) {
-        character_table(iso_8859_5, simbols_from);
+        character_table(iso_8859_5, symbols_from);
     }
 
     FILE *f_to;
@@ -151,14 +150,14 @@ int main(int argc, char *argv[]) {
     char cc; // Сивол который декодируем
     while ((in = fgetc(f_from)) != EOF) {
         cc = (char) in;
-        index = index_simbol(cc, simbols_from);
+        index = index_symbol(cc, symbols_from);
         if (index == -1) {
             fputc(in, f_to);
             continue;
         }
 
         for (int i = 0; i < 2; ++i) {
-            fputc((int)simbols_utf8[index][i], f_to);
+            fputc((int)symbols_utf8[index][i], f_to);
         }
     };
 
