@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static const char *utf8 = "alfavit_utf8.txt";
 static const char *cp125 = "alfavit_cp1251.txt";
@@ -46,32 +47,6 @@ void character_table(const char *name_file, char symbols[66][3]) {
 }
 
 /**
- * Сравниваем строки.
- * @param str0 - строка сравнения
- * @param str1 - строка сравнения
- * @return 0|1 - 0 не одинаковые, 1 одинаковые
- */
-int compare_strings(const char *str0, const char *str1) {
-    for (int i = 0;; ++i) {
-        if (str0[i] != str1[i]) {
-            return 0;
-        }
-
-        // если строка закончилась там и там, то заканяиваем сравнение
-        if (str0[i] == '\0' && str1[i] == '\0') {
-            break;
-        }
-
-        // если где то строка закончилась, а где то нет, то возвращаем лож
-        if (str0[i] == '\0' || str1[i] == '\0') {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-/**
  * Получаем индекс символа в таблице символов.
  * @param symbol - символ для которого получаем индекс.
  * @param from - таблица символов в которой ищем символ.
@@ -103,18 +78,18 @@ int main(int argc, char *argv[]) {
     }
 
     /** проверяем чтобы файл результата не был файлом с кодировками, во избижания затирания кодировки */
-    if (compare_strings(argv[3], utf8)
-        || compare_strings(argv[3], cp125)
-        || compare_strings(argv[3], koi8)
-        || compare_strings(argv[3], iso_8859_5)) {
+    if (!strcmp(argv[3], utf8)
+        || !strcmp(argv[3], cp125)
+        || !strcmp(argv[3], koi8)
+        || !strcmp(argv[3], iso_8859_5)) {
         printf("ERROR: Попытка переписать файл кодировки.\n");
         exit(1);
     }
 
     /** проверяем корректность аргумента кодировки файла который декодируем в utf8 */
-    if (!compare_strings(argv[2], code_cp1251)
-        && !compare_strings(argv[2], code_koi8)
-        && !compare_strings(argv[2], code_iso_8859_5)) {
+    if (strcmp(argv[2], code_cp1251)
+        && strcmp(argv[2], code_koi8)
+        && strcmp(argv[2], code_iso_8859_5)) {
         printf("ERROR: Допустимые кодировки cp125|koi8|iso-8859-5.\n");
         exit(1);
     }
@@ -123,13 +98,13 @@ int main(int argc, char *argv[]) {
     static char symbols_from[66][3]; // таблица символов кодировки исходного файла (индекс символа соответствует индексу символа в таблице кодировки symbols_utf8)
     static char symbols_utf8[66][3]; // таблица символов кодировки utf8 (индекс символа соответствует индексу символа в таблице кодировки symbols_from)
     character_table(utf8, symbols_utf8);
-    if (compare_strings(argv[2], code_cp1251)) {
+    if (!strcmp(argv[2], code_cp1251)) {
         character_table(cp125, symbols_from);
     }
-    if (compare_strings(argv[2], code_koi8)) {
+    if (!strcmp(argv[2], code_koi8)) {
         character_table(koi8, symbols_from);
     }
-    if (compare_strings(argv[2], code_iso_8859_5)) {
+    if (!strcmp(argv[2], code_iso_8859_5)) {
         character_table(iso_8859_5, symbols_from);
     }
 
