@@ -226,6 +226,10 @@ int main(int argc, char *argv[]) {
     }
 
     int woeid = woeid_from_json(wr_buf);
+    if(!woeid) {
+        fprintf(stderr, "ERROR: Передана не корректная локация\n");
+        exit(1);
+    }
     char str_woeid[12];
     sprintf(str_woeid, "%d", woeid);
 
